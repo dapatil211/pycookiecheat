@@ -25,6 +25,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import CBC
 from cryptography.hazmat.primitives.hashes import SHA1
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+import secretstorage
 
 
 def clean(decrypted: bytes) -> str:
@@ -155,6 +156,14 @@ def get_linux_config(browser: str) -> dict:
                 continue
 
             # Inner loop did `break`, so `break` outer loop
+            break
+    bus = secretstorage.dbus_init()
+    collection = secretstorage.get_default_collection(bus)
+    for item in collection.get_all_items():
+        if item.get_label() == 'Chrome Safe Storage':
+            MY_PASS = item.get_secret()
+            config['my_pass'] = MY_PASS
+            pass_found = True
             break
 
     # Try to get pass from keyring, which should support KDE / KWallet
